@@ -15,7 +15,7 @@ app.get('/app/:word', function (req, res) {
     test: req.params.word
   });
 
-  var conString = "postgres://azureuser@localhost/collab";
+  var conString = "postgres://postgres:collab@localhost/collab";
 
   pg.connect(conString, function(err, client, done) {
     if(err) {
