@@ -5,7 +5,11 @@ var io = require('socket.io')(server);
 var exphbs  = require('express-handlebars');
 var url = require('url');
 var pg = require('pg');
-var conString = "postgres://postgres:collab@localhost/collab";
+var imgur = require('imgur-node-api');
+
+var keys = require('./keys');
+var conString = keys.postgres.url;
+imgur.setClientID(keys.imgur.client_id);
 
 server.listen(3000);
 
@@ -19,12 +23,15 @@ app.get('/collaboard/:word', function (req, res) {
   pg.connect(conString, function(err, client, done) {
     if(err) return console.error('error fetching client from pool', err);
     client.query('SELECT * FROM message_data WHERE room_id=' + req.params.word, function(err, result) {
-      done();
-      if(err) return console.error('error running query', err);
-      console.log(result.rows);
-      res.render("collaboard", {
-        test: req.params.word,
-        messages: result.rows
+      var query_string = 'SELECT * FROM files_data WHERE room_id=' + req.params.word;
+      client.query(query_string, function(error, query_result){
+        done();
+        if(err) return console.error('error running query', err);
+        console.log(result.rows);
+        res.render("collaboard", {
+          test: req.params.word,
+          messages: result.rows
+        });
       });
     });
   });
@@ -35,8 +42,22 @@ io.on('connection', function (socket) {
   socket.on('room', function (data) {
     u = url.parse(data.url);
     socket.path = u.path.split('/')[2];
+    socket.user = data.name;
     socket.join(socket.path);
     io.to(socket.path).emit('joined', data.name + " joined!");
+
+    // pg.connect(conString, function(err, client, done) {
+    //   if(err) return console.error('error fetching client from pool', err);
+    //   var query_string = 'SELECT * FROM drawing_data WHERE room_id=' + req.params.word;
+    //   client.query(query_string, function(err, result) {
+    //     done();
+    //     if(err) return console.error('error running query', err);
+    //     console.log(result.rows);
+    //     result.rows.forEach(function(row){
+    //       socket.emit('draw', row);
+    //     });
+    //   });
+    // });
   });
 
   socket.on('message', function(msg){
@@ -45,7 +66,7 @@ io.on('connection', function (socket) {
     if(!socket.path) return;
     pg.connect(conString, function(err, client, done) {
       if(err) return console.error('error fetching client from pool', err);
-      var query_string = 'INSERT INTO message_data VALUES (' + socket.path + ', \'' + msg + '\');'
+      var query_string = 'INSERT INTO message_data (room_id, message, sender) VALUES (' + socket.path + ', \'' + msg + '\', \'' + socket.user + '\');'
       console.log(query_string);
       client.query(query_string, function(err, result) {
         done();
@@ -59,15 +80,21 @@ io.on('connection', function (socket) {
     if(!socket.path) return;
     io.to(socket.path).emit('drawRequest', data);
   });
+
+  socket.on('file', function(data){
+    imgur.upload(data.file), function (err, res) {
+      console.log(res.data.link);
+
+      pg.connect(conString, function(err, client, done) {
+        if(err) return console.error('error fetching client from pool', err);
+        var query_string = 'INSERT INTO file_data (room_id, url) VALUES (' + socket.path + ', \'' + res.data.link + '\');'
+        console.log(query_string);
+        client.query(query_string, function(err, result) {
+          done();
+          io.to(socket.path).emit('file', {url:res.data.link, time:new Date()});
+          if(err) return console.error('error running query', err);
+        });
+      });
+    });
+  });
 });
-
-function pgFormatDate() {
-  /* Via http://stackoverflow.com/questions/3605214/javascript-add-leading-zeroes-to-date */
-  function zeroPad(d) {
-    return ("0" + d).slice(-2)
-  }
-
-  var parsed = new Date();
-
-  return [parsed.getUTCFullYear(), zeroPad(parsed.getMonth() + 1), zeroPad(parsed.getDate()), zeroPad(parsed.getHours()), zeroPad(parsed.getMinutes()), zeroPad(parsed.getSeconds())].join(" ");
-}
