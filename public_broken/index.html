@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+
+  <head>
+    <title>Collab</title>
+    <link href="/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="/css/bootstrap-responsive.min.css" rel="stylesheet" type="text/css">
+    <link href="/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="/css/drawpad.css" rel="stylesheet" type="text/css">
+    <script src="/node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <script src="/js/drawing.js"></script>
+  </head>
+
+  <body>
+    <div class="right">
+        <ul id="messages"></ul>
+
+        <form action="">
+            <input id="m" autocomplete="off" /><button>Send</button>
+        </form>
+
+        <script>
+            var socket = io();
+            $('form').submit(function(){
+            socket.emit('message', $('#m').val());
+            $('#m').val('');
+                return false;
+            });
+            socket.on('message', function(msg){
+                $('#messages').append($('<li>').text(msg));
+            });
+        </script>
+    </div>
+
+    <div id="drawingPad">
+
+    </div>
+    <script src="/js/drawing.js"></script>
+    <script>
+        $(document).bind("touchmove", function(e) {
+            e.preventDefault();
+        });
+        var options = {
+            width:800,
+            height:500
+        },
+        dp = new DrawingPad(options);
+        dp.init("#drawingPad");
+    </script>
+
+  </body>
+</html>
