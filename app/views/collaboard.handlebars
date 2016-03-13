@@ -6,7 +6,7 @@
       </div>
       <div id="screenshots" class="card-2 row" style="">
         {{#each files}}
-          <a download href="{{this.url}}" class="thumbnail" style="width: 100px; margin: 10px 10px;">
+          <a download href="{{this.url}}" class="thumbnail" style="width: 100px; margin: 10px 10px; display:inline-block;">
             <img src="{{this.url}}"/>
             {{this.uploaded_at}}
           </a>
@@ -52,7 +52,7 @@
 
     window.socket.on('file', function(data){
       console.log(data);
-      $("#screenshots").append('<a class="thumbnail" download href="' + data.url + '" style="width: 100px; margin: 10px 10px;">' +
+      $("#screenshots").append('<a class="thumbnail" download href="' + data.url + '" style="width: 100px; margin: 10px 10px; display:inline-block;">' +
         '<img src="' + data.url + '"/>' + data.uploaded_at +
       '</a>');
     });

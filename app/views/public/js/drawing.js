@@ -342,10 +342,11 @@ DrawingPad = function(options) {
 				});
 				$(".alert").show().alert();
 			}else if($(this).hasClass(tools[4])){    //save
+				console.log("GOO");
 				// var image = document.getElementById("0966817864013656186").toDataURL();
 				// window.socket.emit("file", {'file': image});
 
-				var img = document.getElementById('0966817864013656186').toDataURL().split(',')[1];
+				var img = document.getElementById(DP.thisObj.id).toDataURL().split(',')[1];
 
 				$.ajax({
 				    url: 'https://api.imgur.com/3/image',
