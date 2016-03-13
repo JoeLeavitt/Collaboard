@@ -1,8 +1,91 @@
-<h1>Example App: Home {{test}}</h1>
+<div class="container-fluid">
+  <div class="row">
+    <div>
+      <div id="drawingPad">
+        <!-- This is where all the code will be place dynamically -->
+      </div>
+      <div id="screenshots" class="card-2 row" style="">
+        {{#each files}}
+          <a download href="{{this.url}}" class="thumbnail" style="width: 100px; margin: 10px 10px;">
+            <img src="{{this.url}}"/>
+            {{this.uploaded_at}}
+          </a>
+        {{/each}}
+      </div>
+    </div>
+    <div class="right" style="box-shadow: -3px 0px 10px 1px rgba(0,0,0,0.16);">
+        <ul class="table" id="messages">
+          {{#each messages}}
+            <li style="padding:10px;">
+              <span>{{this.sender}}</span> <span>({{this.sent_at}})</span>: <span>{{this.message}}</span>
+            </li>
+          {{/each}}
+          <input placeholder="Hit ENTER to send..." style="position: fixed; width: 100%; bottom: 0; height: 40px; padding: 5px;" id="m" autocomplete="off" />
+        </ul>
+    </div>
+  </div>
+</div>
+<script>
 
+    /**
+     * Builds a model box for user to create a user name.
+     */
+    function _buildUserCreate(){
+      return '<div class="modal fade userNameModal">' +
+      '<div class="modal-header">' +
+      '<h3>Create a user name.</h3>' +
+      '</div>' +
+      '<div class="modal-body">' +
+      '<input type="text" size="30" name="name" class="userNameInput">' +
+      '</div>' +
+      '<div class="modal-footer">' +
+      '<a href="#" class="btn confirm" data-dismiss="modal">Confirm</a>' +
+      '</div>' +
+      '</div>';
+    }
+    window.socket = window.socket || io();
+    window.socket.on('message', function(msg){
+      $('#messages').append('<li style="padding:10px;">' +
+        '<span>' + msg.sender + '</span> <span>( ' + new Date(msg.sent_at).toLocaleTimeString() + ')</span>: <span>' + msg.message + '</span>' +
+      '</li>');
+    });
 
-<ul class="people_list">
-  {{#each messages}}
-    <li>{{this.sent_at}} | {{this.message}}</li>
-  {{/each}}
-</ul>
+    window.socket.on('file', function(data){
+      console.log(data);
+      $("#screenshots").append('<a class="thumbnail" download href="' + data.url + '" style="width: 100px; margin: 10px 10px;">' +
+        '<img src="' + data.url + '"/>' + data.uploaded_at +
+      '</a>');
+    });
+
+    $(document).bind("touchmove", function(e) {
+      e.preventDefault();
+    });
+    // overriding default options
+    var options = {
+      width:800,
+      height:500
+    },
+    //init the drawpad
+    dp = new DrawingPad(options);
+    $("body").append(_buildUserCreate());
+    $('.userNameModal').on('shown', function () {
+      $(".confirm").click(function(){
+        name = $(".userNameInput").val().trim();
+        //tell the server i'm here
+        window.socket.emit('room', {url : window.location.href, name : name});
+      });
+    });
+    $('.userNameModal').modal("show");
+    window.socket.on('init', function(id){
+      dp.init("#drawingPad", id);
+    });
+
+    $("#m").keypress(function(e) {
+        if(e.which == 13) {
+          if($('#m').val().trim() == '') return false;
+          window.socket.emit('message', $('#m').val());
+          $('#m').val('');
+          return false;
+        }
+    });
+</script>
