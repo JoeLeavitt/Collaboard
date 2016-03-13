@@ -6,6 +6,7 @@ var exphbs  = require('express-handlebars');
 var url = require('url');
 var pg = require('pg');
 var imgur = require('imgur-node-api');
+var cache = {};
 
 var keys = require('./keys');
 var conString = keys.postgres.url;
@@ -91,14 +92,12 @@ io.on('connection', function (socket) {
     io.to(socket.path).emit('message', {message:msg, sender:socket.user, sent_at:new Date()});
   });
 
-  var cache = {};
-
   socket.on('drawRequest', function (data) {
       if(!socket.path) return;
       // console.log(data);
 
       if(data.type == 'mousedown'){
-        cache[socket.path] = [];
+        cache[socket.path] = cache[socket.path] || [];
         cache[socket.path].push(data);
         console.log("GOT ONE");
       }else if(data.type == 'mousemove'){
@@ -172,7 +171,7 @@ io.on('connection', function (socket) {
       console.log(query_string);
       client.query(query_string, function(err, result) {
         done();
-        io.to(socket.path).emit("deleteShared",{ id : id});
+        io.to(socket.path).emit("deleteShared",id);
         if(err) return console.error('error running query', err);
       });
     });
