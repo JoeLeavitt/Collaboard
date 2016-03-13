@@ -1,4 +1,5 @@
-var app = require('express')();
+var express = require('express');
+var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var exphbs  = require('express-handlebars');
@@ -10,7 +11,9 @@ server.listen(3000);
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 
-app.get('/app/:word', function (req, res) {
+app.use('/', express.static(__dirname + '/home'));
+
+app.get('/collaboard/:word', function (req, res) {
   res.render("home", {
     test: req.params.word
   });
