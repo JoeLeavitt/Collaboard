@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "",
   "dependencies": {
-    "express": "^4.10.2",
+    "bootstrap": "^3.3.6",
+    "express": "^4.13.4",
+    "jquery": "^2.2.1",
     "socket.io": "1.2.0"
   }
 }
