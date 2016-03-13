@@ -32,8 +32,8 @@ DrawingPad = function(options) {
 	 * @param {Object} data
 	 */
 	function eraseShared(data){
-		if(DP.thisObj[data.id]){
-			DP.thisObj[data.id].ctx.clearRect(0, 0, DP.myCanvas.width, DP.myCanvas.height);
+		if(DP.thisObj[data]){
+			DP.thisObj[data].ctx.clearRect(0, 0, DP.myCanvas.width, DP.myCanvas.height);
 		}
 	}
 
@@ -478,7 +478,7 @@ DrawingPad = function(options) {
 	    });
 
 	    DP.thisObj.socket.on('deleteShared', function(data) {
-			return deleteShared(data); //remove shared canvas
+			return eraseShared(data); //remove shared canvas
 		});
 
 		DP.thisObj.socket.on('setConfirmShare', function(data) {
