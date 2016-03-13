@@ -6,7 +6,7 @@ Collaboard combines the incredibly convenient asynchronous nature of chat, with 
 
 ## Features
 
-Collaboard put collaboration first. With a click of a button, your group/team can have your very own Collaboard without needing to log in.
+Collaboard puts collaboration first. With a click of a button, your group/team can have your very own Collaboard without needing to log in.
 
 With a Collaboard you can chat about and visualize your ideas in real time.
 
