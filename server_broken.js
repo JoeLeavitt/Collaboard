@@ -4,19 +4,21 @@
     var server = require('http').Server(app);
     io = require('socket.io')(server);
 
-    server.listen(4000);
+    server.listen(3000);
 
     app.use('/', express.static('public'));
+    app.use('/node_modules', express.static('node_modules'));
+
     io.on('connection', function (socket) {
 
-        socket.on('message', function(msg){
-           io.emit('message', msg);
-        })
+        //socket.on('message', function(msg){
+         //   io.emit('message', msg);
+        //})
 
         socket.on("setClientId", function (data) {
             connectedClients[data.id] = {
-                id : data.id, //adds key to a map
-                senderName : data.senderName
+            	id : data.id,
+            	senderName : data.senderName
             }
             console.log(connectedClients);
         });
@@ -64,5 +66,6 @@
                 id: data.id
             });
         });
+
     });
 

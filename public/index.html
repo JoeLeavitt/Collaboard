@@ -1,25 +1,25 @@
 <!doctype html>
-<html>
+<html lang="en">
+	<title>Shared DrawPad</title>
+	<link type="text/css" href="css/bootstrap.min.css" rel="stylesheet"/>
+	<link type="text/css" href="css/drawpad.css" rel="stylesheet"/>
+    <link type="text/css" href="css/style.css" rel="stylesheet"/>
+	<script src="js/jquery-1.10.2.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/drawing.js"></script>
+	<script src="http://localhost:4000/socket.io/socket.io.js"></script>
+	
+	<body>
+		<div id="drawingPad">
+			<!-- This is where all the code will be place dynamically -->
+		</div>
 
-  <head>
-    <title>Collab</title>
-    <link href="/css/style.css" rel="stylesheet" type="text/css" />
-    <link href="/css/bootstrap-responsive.min.css" rel="stylesheet" type="text/css">
-    <link href="/css/bootstrap.min.css" rel="stylesheet" type="text/css">
-    <link href="/css/drawpad.css" rel="stylesheet" type="text/css">
-    <script src="/js/drawing.js"></script>
-  </head>
-
-  <body>
-    <div class="right">
+     <div class="right">
         <ul id="messages"></ul>
 
         <form action="">
-            <input id="m" /><button>Send</button>
+            <input id="m" autocomplete="off" /><button>Send</button>
         </form>
-
-        <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
-        <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
 
         <script>
             var socket = io();
@@ -34,21 +34,19 @@
         </script>
     </div>
 
-    <div id="drawingPad">
+	</body>
 
-    </div>
-
-    <script>
-        $(document).bind("touchmove", function(e) {
-            e.preventDefault();
-        });
-        var options = {
-            width:800,
-            height:500
-        },
-        dp = new DrawingPad(options);
-        dp.init("#drawingPad");
-    </script>
-
-  </body>
+	<script type="text/javascript">
+		$(document).bind("touchmove", function(e) {
+			e.preventDefault();
+		});
+		// overriding default options
+		var options = {
+			width:800,
+			height:500
+		},
+		//init the drawpad
+		dp = new DrawingPad(options);
+		dp.init("#drawingPad");
+	</script>
 </html>
