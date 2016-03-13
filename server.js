@@ -9,13 +9,22 @@
     app.use('/', express.static('public'));
     io.on('connection', function (socket) {
 
-        socket.on('message', function(msg){
-           io.emit('message', msg);
-        })
+        socket.on('message', function(msg, data){
+            var date = new Date();
+            var hours = date.getHours();
+            var minutes = date.getMinutes();
+            var ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            var strTime = hours + ':' + minutes + ' ' + ampm;
+
+            io.emit('message', strTime + ' - ' + msg);
+        });
 
         socket.on("setClientId", function (data) {
             connectedClients[data.id] = {
-                id : data.id, //adds key to a map
+                id : data.id,
                 senderName : data.senderName
             }
             console.log(connectedClients);

@@ -4,14 +4,14 @@
  * Main Application Function
  * @param {Object} options
  */
-DrawingPad = function(options) { 
+DrawingPad = function(options) {
 	"use strict";
 	var defaults = {
 		width : 500,
 		height : 500,
 		defaultColor : "#00000",
 		defaultStroke : 4
-	}, 
+	},
 	tools = [
 		"share",
 		"draw",
@@ -19,14 +19,14 @@ DrawingPad = function(options) {
 		"trash",
 		"save"
 	],
-	settings = $.extend(defaults, options), 
+	settings = $.extend(defaults, options),
 	DP={};
 	DP.points=[];
-	
+
 	DP.isTouchDevice = 'ontouchstart' in document.documentElement;
-	
+
 	/////////////\ SOCKET.IO CALLBACKS \/////////////
-	
+
 	/**
 	 * Remote user has cleared their canvas so clear the one your looking at too
 	 * @param {Object} data
@@ -36,14 +36,14 @@ DrawingPad = function(options) {
 			DP.thisObj[data.id].ctx.clearRect(0, 0, DP.myCanvas.width, DP.myCanvas.height);
 		}
 	}
-	
+
 	/**
-	 * After getting the latest id's from the server it 
+	 * After getting the latest id's from the server it
 	 * builds a list with those names
 	 * @param {Object} data
 	 */
 	function setUserList(data){
-		
+
 		//Build HTML
 		$("body").append(_buildUsersList(data));
 		$('.userListWrapper').on('shown', function () {
@@ -54,9 +54,9 @@ DrawingPad = function(options) {
 		});
 		$('.userListWrapper').modal("show");
 	}
-	
+
 	/**
-	 * A shared user has refreshed there screen or 
+	 * A shared user has refreshed there screen or
 	 * navigated away so their shared canvas is no longer needed
 	 * @param {Object} data
 	 */
@@ -68,7 +68,7 @@ DrawingPad = function(options) {
 	 * @param {Object} data
 	 */
 	function createNewClient(data){
-		
+
 		if(DP.thisObj.id === data.listenerId && !DP.thisObj[data.senderId]){ //test to see if this instance is the one i want.
 			if(confirm(data.senderName + " wants to share their canvas.")){
 				DP.thisObj.socket.emit('confirmShare', {isSharing : true, senderId : data.senderId, listenerId : DP.thisObj.id, senderName : DP.myName});
@@ -79,14 +79,14 @@ DrawingPad = function(options) {
 			}
 		}
 	}
-	
+
 	/**
 	* Alerts you that a user has decided to share with you
 	* @param {Object} data
 	*/
 	function setConfirmShare(data){
 		var message="";
-		
+
 		if(DP.thisObj.id === data.senderId){
 			if(data.isSharing){
 				message = data.senderName + " has agreed to share.";
@@ -100,7 +100,7 @@ DrawingPad = function(options) {
 		}
 	}
 	/**
-	 * draws on your's and the shared canvas 
+	 * draws on your's and the shared canvas
 	 * @param {Object} data
 	 */
 	function draw(data, fromMe){
@@ -109,18 +109,18 @@ DrawingPad = function(options) {
 			var eventType = _eventTypes(data.isTouchDevice),
 			ctx = DP.thisObj[data.id].ctx,
 			scratchCtx = DP.thisObj.scratch.ctx;
-			
+
 			//set the ctx
 			ctx.strokeStyle = data.color;
 			ctx.lineWidth = data.stroke;
 			ctx.lineCap = "round";
 			ctx.lineJoin = "round";
-			
+
 			scratchCtx.strokeStyle = data.color;
 			scratchCtx.lineWidth = data.stroke;
 			scratchCtx.lineCap = "round";
 			scratchCtx.lineJoin = "round";
-			
+
 			if(data.isErase){
 				ctx.globalCompositeOperation = "destination-out";
 				scratchCtx.globalCompositeOperation = "destination-out";
@@ -130,7 +130,7 @@ DrawingPad = function(options) {
 			}
 
 
-			if (data.type === eventType.down) {		
+			if (data.type === eventType.down) {
 				DP.okToDraw = true;
 				if(fromMe && !data.isLineDrawing){
 					DP.points.push({x : data.x, y : data.y});
@@ -142,8 +142,8 @@ DrawingPad = function(options) {
 					ctx.moveTo(data.x, data.y);
 				}
 			} else if ((data.type === eventType.move) && DP.okToDraw) {
-				
-				
+
+
 			    if(data.isLineDrawing && fromMe) {	//draw the line on a temp canvas
 					scratchCtx.clearRect(0, 0, DP.myCanvas.width, DP.myCanvas.height);
 					scratchCtx.beginPath();
@@ -151,7 +151,7 @@ DrawingPad = function(options) {
 					scratchCtx.lineTo(data.x, data.y);
 					scratchCtx.stroke();
 				} else if(fromMe){
-					scratchCtx.clearRect(0, 0, DP.myCanvas.width, DP.myCanvas.height); 
+					scratchCtx.clearRect(0, 0, DP.myCanvas.width, DP.myCanvas.height);
 					DP.points.push({x : data.x, y : data.y});
 					_drawPoints(scratchCtx);
 				} else if(!data.isLineDrawing) { //this is coming from drawing a shared canvas
@@ -166,7 +166,7 @@ DrawingPad = function(options) {
 					ctx.stroke();
 					ctx.closePath();
 					scratchCtx.clearRect(0, 0, DP.myCanvas.width, DP.myCanvas.height);
-				} else if(fromMe){  
+				} else if(fromMe){
 					ctx.drawImage(DP.scratchCanvas, 0, 0);
 					scratchCtx.clearRect(0, 0, DP.myCanvas.width, DP.myCanvas.height);
 				} else {
@@ -174,13 +174,13 @@ DrawingPad = function(options) {
 				}
 				DP.okToDraw = false;
 				scratchCtx.closePath();
-				
+
 				DP.points = [];
 			}
 		}
-	
+
 	}
-	
+
 	//////////////////\ PRIVATE METHODS \////////////////
 	/**
 	 * Simple Random Id Generator
@@ -197,7 +197,7 @@ DrawingPad = function(options) {
 		}
 		return randomstring;
 	}
-	
+
 	/**
 	 * Creates a shared Canvas instance
 	 * @param {int} id
@@ -207,7 +207,7 @@ DrawingPad = function(options) {
 		if (!DP.thisObj[id]) {
 			var sharedCanvas = document.createElement('canvas'),
 			canvas = DP.thisObj.find("#" + DP.thisObj.id);
-			
+
 			sharedCanvas.id = id;
 			sharedCanvas.width = canvas.width();
 			sharedCanvas.height = canvas.height();
@@ -220,18 +220,18 @@ DrawingPad = function(options) {
 			$(DP.thisObj).append(sharedCanvas);
 		}
 	}
-	
+
 	/**
 	 * Builds the tool bar HTML
 	 */
 	function _buildToolBar(){
-		var i, 
+		var i,
 		len = tools.length,
 		tool="";
 		for(i=0; i < len;i+=1) {
-			tool +=  "<li data-toggle='tooltip' data-placement='right' data-original-title='" + tools[i] + "' class='sprite " + tools[i] + "'></li>"; 
+			tool +=  "<li data-toggle='tooltip' data-placement='right' data-original-title='" + tools[i] + "' class='sprite " + tools[i] + "'></li>";
 		}
-		
+
 		return "<ul class='toolbar'>" + tool + "</ul>";
 	}
 	/**
@@ -250,19 +250,19 @@ DrawingPad = function(options) {
 		'</div>' +
 		'</div>';
 	}
-	
+
 	/**
 	 * Builds a User list
 	 * @param {Object} userList
 	 */
 	function _buildUsersList(userList){
 		var uList="", key="", clientCount=0, modal;
-		
-		
+
+
 		for(key in userList) {
 			var sharing = "";
 			if(userList[key].id !== DP.thisObj.id){
-				
+
 				DP.thisObj[key]? sharing = " - ( X )" : sharing = "";
 				uList += "<li data-dismiss='modal' data-id='" + userList[key].id + "'>" + userList[key].senderName + sharing + "</li>";
 				clientCount++;
@@ -270,7 +270,7 @@ DrawingPad = function(options) {
 		}
 		//clear any old lists
 		$(".userListWrapper").remove();
-		
+
 		//create modal
 		modal = '<div class="modal fade userListWrapper">' +
 		'<div class="modal-header">' +
@@ -287,9 +287,9 @@ DrawingPad = function(options) {
 		if(clientCount === 0) {
 			alert("There are no other users at this time.");
 		}
-		
+
 		return clientCount > 0 ? modal : ""; //only show this if there are users to share with
-		
+
 	}
 	/**
 	 * Maps Coords to mouse location.
@@ -317,7 +317,7 @@ DrawingPad = function(options) {
 			"y" : _y
 		};
 	}
-	
+
 	/**
 	 * Determine event types and assigns the correct event types
 	 */
@@ -329,20 +329,20 @@ DrawingPad = function(options) {
 			out : "mouseout"
 		};
 	}
-	
+
 	/**
 	 * Adds the event handlers to everything
 	 */
 	function _setEventHandlers(){
 		var eventType = _eventTypes(DP.isTouchDevice),
 		events = eventType.down + " " + eventType.move + " " + eventType.up + " " + eventType.out;
-		
+
 		window.onunload = function(e) {
 			DP.thisObj.socket.emit('deleteSharedById', {id : DP.thisObj.id});
 		};
-		
+
 		$(".toolbar li").tooltip(options);
-		
+
 		//events for tool bar
 		$(".toolbar").find(".sprite").click(function(){
 			DP.isDrawing = false;
@@ -376,7 +376,7 @@ DrawingPad = function(options) {
 		},function(){
 			$(this).removeClass("hover");
 		});
-		
+
 		DP.thisObj.find(".myCanvas").bind(events, function(e){
 			e.preventDefault();
 			if(DP.isDrawing || DP.isLineDrawing) {
@@ -392,19 +392,19 @@ DrawingPad = function(options) {
 					isErase : DP.isErase,
 					id : DP.thisObj.id
 				};
-				
+
 				draw(data, true);
-				
+
 				if(DP.okToDraw || e.type === eventType.up) {
 					DP.isSharing ? DP.thisObj.socket.emit('drawRequest', data) : "";
 				}
 			}
 		});
-		
+
 	}
 	/**
 	 * Smoothes out the line your drawing.
-	 * @param {Object} ctx 
+	 * @param {Object} ctx
 	 */
 	function _drawPoints(ctx) {
 		var i, len, c, d;
@@ -427,15 +427,15 @@ DrawingPad = function(options) {
 		ctx.stroke();
 	}
 	//////////////////\ START PUBLIC METHODS \////////////////
-	
+
 	/**
 	 * Init DrawingPad
 	 */
 	this.init = function(selector) {
-		
+
 		var id = _randomString(10);
 		DP.myCanvas = document.createElement('canvas');
-		DP.scratchCanvas = document.createElement('canvas'); 
+		DP.scratchCanvas = document.createElement('canvas');
 		DP.thisObj = $(selector);
 		DP.thisObj.id = id;
 
@@ -446,8 +446,7 @@ DrawingPad = function(options) {
 		DP.thisObj[id].ctx = DP.myCanvas.getContext('2d');
 		DP.thisObj[id].ctx.strokeStyle = settings.defaultColor;
 		DP.thisObj[id].ctx.lineWidth = settings.defaultStroke;
-		
-		//
+
 		DP.scratchCanvas.id = "scratchId";
 		DP.scratchCanvas.width = DP.myCanvas.width;
 		DP.scratchCanvas.height = DP.myCanvas.height;
@@ -455,44 +454,44 @@ DrawingPad = function(options) {
 		DP.thisObj.scratch.ctx = DP.scratchCanvas.getContext('2d');
 		DP.thisObj.scratch.ctx.strokeStyle = settings.defaultColor;
 		DP.thisObj.scratch.ctx.lineWidth = settings.defaultStroke;
-		
+
 		$(DP.myCanvas).addClass("myCanvas");
 		$(DP.scratchCanvas).addClass("myCanvas");
 
 		$(selector).append(DP.scratchCanvas); //add canvas to DOM
 		$(selector).append(DP.myCanvas); //add canvas to DOM
 		$(selector).append(_buildToolBar); //add tool bar to DOM
-		
+
 		//register socket listeners
 		DP.thisObj.socket = io.connect("http://localhost:4000");
-	
+
 	    DP.thisObj.socket.on('setUserList', function(data) {
 			return setUserList(data); //show pop up list
 		});
-		
+
 		DP.thisObj.socket.on('draw', function(data) {
 			return draw(data);
 	    });
-	    
+
 	    DP.thisObj.socket.on('eraseShared', function(data) {
 			return eraseShared(data);
 		});
-		
+
 		DP.thisObj.socket.on('createNewClient', function(data) {
 			return createNewClient(data);
 	    });
-	    
+
 	    DP.thisObj.socket.on('deleteShared', function(data) {
 			return deleteShared(data); //remove shared canvas
 		});
-		
+
 		DP.thisObj.socket.on('setConfirmShare', function(data) {
 			return setConfirmShare(data);
 	    });
-		
+
 		//set event handlers
 		_setEventHandlers();
-		
+
 		$("body").append(_buildUserCreate());
 		$('.userNameModal').on('shown', function () {
 			$(".confirm").click(function(){

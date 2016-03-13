@@ -10,11 +10,9 @@
 	<script src="http://localhost:4000/socket.io/socket.io.js"></script>
 	
 	<body>
-		<div id="drawingPad">
-			<!-- This is where all the code will be place dynamically -->
-		</div>
+		<div id="drawingPad"></div>
+        <div class="right">
 
-     <div class="right">
         <ul id="messages"></ul>
 
         <form action="">
@@ -28,25 +26,25 @@
             $('#m').val('');
                 return false;
             });
-            socket.on('message', function(msg){
+            socket.on('message', function(msg, data){
                 $('#messages').append($('<li>').text(msg));
             });
         </script>
     </div>
+    </body>
 
-	</body>
+    <script>
+        $(document).bind("touchmove", function(e) {
+            e.preventDefault();
+        });
 
-	<script type="text/javascript">
-		$(document).bind("touchmove", function(e) {
-			e.preventDefault();
-		});
-		// overriding default options
-		var options = {
-			width:800,
-			height:500
-		},
-		//init the drawpad
-		dp = new DrawingPad(options);
-		dp.init("#drawingPad");
-	</script>
+        var options = {
+            width:800,
+            height:500
+        },
+
+        dp = new DrawingPad(options);
+        dp.init("#drawingPad");
+    </script>
+
 </html>
