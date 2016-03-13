@@ -7,8 +7,8 @@ var connectedClients = {};
 app.use('/', express.static('public'));
 
 io.on('connection', function(socket){
-    socket.on('chat message', function(msg){
-        io.emit('chat message', msg);
+    socket.on('message', function(msg){
+        io.emit('message', msg);
     });
 
     socket.on("setClientId", function(data) {
